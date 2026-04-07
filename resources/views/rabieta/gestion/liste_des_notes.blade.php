@@ -2,7 +2,7 @@
 @section('content')
 <div class="card mb-4 shadow-sm">
     <div class="card-body">
-        <form action="{{ url('/etudiants') }}" method="GET" class="row g-3">
+        <form action="{{ url('/notes') }}" method="GET" class="row g-3">
             <div class="col-md-8">
                 <select name="niveau" class="form-select">
                     <option value="">Sélectionner un niveau</option>
