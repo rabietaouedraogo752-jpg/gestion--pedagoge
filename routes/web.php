@@ -104,3 +104,6 @@ Route::get('/enseignant/cours/{id}/contenu', [App\Http\Controllers\CourControlle
 // Route pour l'enregistrement (POST)
 Route::post('/contenu/enregistrer', [App\Http\Controllers\CourController::class, 'sauvegarderContenu']);
 
+// L'ID dans l'URL permet de savoir quel cours on ouvre
+Route::get('/etudiant/cours/{id}', [App\Http\Controllers\CourController::class, 'afficherDétails']);
+

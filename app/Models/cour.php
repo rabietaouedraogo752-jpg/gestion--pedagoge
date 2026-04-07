@@ -20,4 +20,9 @@ public function matiere()
     {
         return $this->belongsTo(Matiere::class, 'matiere_id');
     }
+
+public function contenus()
+    {
+        return $this->hasMany(Contenu::class, 'cour_id');
+    }
 }

@@ -68,7 +68,7 @@
                             <h6 class="fw-bold mb-0" style="font-size: 0.9rem;">{{ $c->titre }}</h6>
                         </div>
                         <div class="card-footer bg-white border-0 pb-3">
-                            <a href="#" class="btn btn-sm btn-outline-primary w-100">Accéder</a>
+                            <a href="/etudiant/cours/{{ $c->id }}" class="btn btn-sm btn-outline-primary w-100">Accéder</a>
                         </div>
                     </div>
                 </div>

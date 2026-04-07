@@ -110,9 +110,19 @@ public function sauvegarderContenu(Request $demande) {
         'cour_id' => $demande->cour_id,
         'titre_du_chapitre' => $demande->titre_du_chapitre,
         'contenu_du_cours' => $demande->contenu_du_cours,
-        'fichier_joint' => $demande->$ajout,
+        'fichier_joint' =>$ajout,
     ]);
     return redirect('/test-enseignant')->with('success', 'Chapitre publié !');
 }
 
+public function afficherDétails($id)
+{
+    // On récupère le cours avec ses contenus associés
+    $leCour = \App\Models\Cour::with('contenus')->findOrFail($id);
+    
+    return view('rabieta.etudiant.voir_contenu_cours', compact('leCour'));
 }
+
+
+}
+
