@@ -64,5 +64,18 @@ class DashboardController extends Controller
         }
 
         return view('davy.gestion.dashboard', $data);
+        if ($user->role == 'etudiant') {
+            $mesNotes = \App\Models\Note::where('user_id', $user->id)->with('matiere')->get();
+            $mesCours = \App\Models\Cour::where('niveau', $user->niveau)->with('matiere')->get();
+            $toutesMatieres = \App\Models\Matiere::all();
+            
+            return view('rabieta.etudiant.accueil', compact('mesNotes', 'mesCours', 'toutesMatieres'));
+        }
+        if ($user->role == 'enseignant') {
+            $mesCours = \App\Models\Cour::where('user_id', $user->id)->with('matiere')->get();
+            
+            return view('rabieta.enseignant.accueil', compact('mesCours'));
+        }
+        return view('davy.gestion.dashboard', $data);
     }
 }
