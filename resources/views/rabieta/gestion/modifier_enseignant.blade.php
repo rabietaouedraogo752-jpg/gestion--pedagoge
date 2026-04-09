@@ -11,6 +11,10 @@
         <label for="prenom" class="form-label">Prenom</label>
         <input type="text" name="prenom" class="form-control" value="{{ $enseignant->prenom }}">
     </div>
+    <div class="mb-3">
+        <label for="specialite" class="form-label">Specialite</label>
+        <input type="text" name="specialite" class="form-control" value="{{ $enseignant->specialite}}">
+    </div>
    
     <div class="mb-3">
         <label for="telephone" class="form-label">Télephone</label>

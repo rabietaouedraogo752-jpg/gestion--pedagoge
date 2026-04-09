@@ -12,11 +12,7 @@
         </form>
 
 </div>        
-   @if(session('success'))
-     <div class="alert alert-success">
-         {{ session('success')}}
-    </div>
-   @endif
+  
 
    <table class="table table-striped table-hover mt-3">
    <thead class="table-primary">

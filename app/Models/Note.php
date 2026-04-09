@@ -16,7 +16,8 @@ public function user()
 }
 //une note est relié à une matière
 public function matiere() {
-    return $this->belongsTo(\App\Models\Matiere::class);
+    return $this->belongsTo(\App\Models\Matiere::class, 'matiere_id');
 }
+
 
 }

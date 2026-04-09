@@ -52,7 +52,8 @@
    <tbody>
     @foreach($etudiants as $tu)
     <tr>
-        <td>{{ $tu->nom }}</td>
+        <td>{{ $tu->nom }} {{ $tu->prenom }}</td>
+        
         @foreach($matieres as $ma)
           <td>
            

@@ -21,7 +21,7 @@
                 </div>
                
             </div>
-             <p class="text-muted">Bienvenue, <strong>{{ Auth::user()->nom_complet }}</strong> !</p>
+             <p class="text-muted">Bienvenue, <strong>{{ Auth::user()->nom }} {{ Auth::user()->prenom }}</strong> !</p>
         </div>
     </div>
     <div class="row g-4 mb-4">

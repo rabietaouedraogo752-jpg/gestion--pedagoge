@@ -9,10 +9,7 @@
         border: none;
         overflow: hidden;
     }
-    .course-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 25px rgba(0,0,0,0.1) !important;
-    }
+    
     .course-banner {
         height: 110px;
         background: linear-gradient(135deg, #0d47a1, #42a5f5);
@@ -36,11 +33,11 @@
 </style>
 
 <div class="container-fluid py-4">
-    <!-- 1. TABLEAU DE BORD (En-tête) -->
+    <!-- 1.  mon TABLEAU DE BORD (En-tête) -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="bg-white p-3 shadow-sm rounded d-flex justify-content-between align-items-center">
-                <h4 class="mb-0 fw-bold"><i class="bi bi-speedometer2 me-2"></i>Tableau de bord</h4>
+            <div class="bg-white p-3 border rounded d-flex justify-content-between align-items-center">
+                <h4 class=" fw-bold"><i class="bi bi-speedometer2 me-2"></i>Tableau de bord</h4>
                 <span class="badge bg-light text-dark border p-2">
                     <i class="bi bi-mortarboard me-1"></i> {{ Auth::user()->niveau }}
                 </span>
@@ -49,15 +46,15 @@
     </div>
 
     <div class="row g-4">
-        <!-- COLONNE GAUCHE (8/12) : COURS ET EMPLOI DU TEMPS -->
-        <div class="col-lg-8">
+    
+        <div class="col-lg-8 border">
             
             <!-- 2. MES COURS (Design Cartes/Vignettes) -->
             <h5 class="section-title">Mes cours ({{ Auth::user()->niveau }})</h5>
             <div class="row g-3 mb-5">
                 @forelse($mesCours as $c)
                 <div class="col-md-6 col-xl-4">
-                    <div class="card h-100 shadow-sm course-card">
+                    <div class="card h-100 border course-card">
                         <div class="course-banner">
                             {{ $c->matiere->nom_matiere ?? 'Général' }}
                         </div>
@@ -86,9 +83,9 @@
         </div>
 
         <!-- COLONNE DROITE (4/12) : CHRONOLOGIE ET NOTES -->
-        <div class="col-lg-4">
+        <div class="col-lg-4 ">
             <h5 class="section-title">Emploi du temps de la semaine</h5>
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 border">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
@@ -115,7 +112,7 @@
             
             <!-- 5. MES NOTES -->
             <h5 class="section-title">Mes Notes</h5>
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 border">
                 <div class="card-body p-0">
                     <table class="table table-sm mb-0">
                         <tbody>
@@ -124,7 +121,7 @@
                                 <td class="ps-3 py-2 small">{{ $n->matiere->nom_matiere ?? 'N/A' }}</td>
                                 <td class="text-end pe-3">
                                     <span class="fw-bold {{ $n->valeur >= 10 ? 'text-success' : 'text-danger' }}">
-                                        {{ $n->valeur }}/20
+                                        {{ $n->valeur_note }}/20
                                     </span>
                                 </td>
                             </tr>

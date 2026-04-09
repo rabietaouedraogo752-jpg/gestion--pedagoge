@@ -17,7 +17,11 @@ class EtudiantEnseignantController extends Controller
     $niveau = $mottape->get('niveau');
     $demande = \App\Models\User::where('role', 'etudiant');
     if ($recherche) {
-        $demande->where('nom', 'LIKE', "%{$recherche}%")->get();
+        $demande->where(function($query) use ($recherche) {
+            $query->where('nom',    'LIKE', "%{$recherche}%")
+                  ->orWhere('prenom', 'LIKE', "%{$recherche}%");
+        });
+    
     } 
     if ($niveau) {
       $demande->where('niveau', $niveau);
@@ -40,10 +44,10 @@ class EtudiantEnseignantController extends Controller
         // ici le mot de passe sera remplacé par une autre autre cryptée avec bcrypt
         'password'=>bcrypt($donneesSaisies->password),
         'role'=> 'etudiant',
-        'telephone' =>telephone,
-        'niveau' =>niveau,
-        'adresse' =>adresse,
-        'date_naissance' =>date_naissance,
+        'telephone' =>'telephone',
+        'niveau' =>'niveau',
+        'adresse' =>'adresse',
+         'date_naissance' => \Carbon\Carbon::parse($donneesSaisies->date_naissance)->format('Y-m-d'),
     ]);
     return redirect('/etudiants')->with('success', 'étudiant(e) ajouté(e) !');
   }
