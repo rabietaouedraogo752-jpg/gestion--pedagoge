@@ -117,7 +117,7 @@ public function sauvegarderContenu(Request $demande) {
 
 public function afficherDétails($id)
 {
-    // On récupère le cours avec ses contenus associés
+    // je récupère le contenu associé à chaque cours
     $leCour = \App\Models\Cour::with('contenus')->findOrFail($id);
     
     return view('rabieta.etudiant.voir_contenu_cours', compact('leCour'));

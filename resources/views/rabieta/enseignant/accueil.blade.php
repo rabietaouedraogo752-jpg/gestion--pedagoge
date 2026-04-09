@@ -3,7 +3,7 @@
 
 <div class="container-fluid py-4">
     <h3 class="fw-bold text-primary mb-4">Mon Espace Enseignant</h3>
-
+    
     <div class="row g-4">
         @forelse($mesCours as $c)
         <div class="col-md-6 col-lg-4">
@@ -14,6 +14,9 @@
                     <p class="text-muted small">{{ $c->matiere->nom_matiere ?? '' }}</p>
                     
                     <hr>
+                    <a href="/enseignant/cours/{{ $c->id }}/notes" class="btn btn-outline-success btn-sm">
+    <i class="bi bi-pencil-square me-1"></i> Saisir les notes
+</a>
                     
                     <div class="d-grid gap-2">
                         <!-- Bouton pour ajouter du contenu -->

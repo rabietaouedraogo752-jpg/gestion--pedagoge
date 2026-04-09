@@ -116,7 +116,12 @@ Route::middleware(['auth','role:enseignant'])->group(function () {
         [CourController::class, 'creerContenu']);
 
     Route::post('/contenu/enregistrer',
-        [CourController::class, 'sauvegarderContenu']);
+    [CourController::class, 'sauvegarderContenu']);
+
+    Route::get('/enseignant/cours/{id}/notes',[NoteController::class, 'indexEnseignant']);
+
+     Route::post('/enseignant/cours/{id}/notes',
+    [NoteController::class, 'sauvegarderNotes']);
 });
 
 

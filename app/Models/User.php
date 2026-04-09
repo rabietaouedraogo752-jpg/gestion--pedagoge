@@ -61,5 +61,9 @@ class User extends Authenticatable
     // On vérifie si le rôle de l'utilisateur est bien 'admin'
     return $this->role === 'admin';
 }
+public function cours()
+{
+    return $this->hasMany(\App\Models\cour::class, 'user_id');
+}
 
 }

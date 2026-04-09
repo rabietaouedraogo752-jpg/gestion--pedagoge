@@ -62,4 +62,43 @@ class NoteController extends Controller
     ]);
     return redirect('/notes')->with('success', 'Matiere mise à jour!');
   }
+  public function indexEnseignant($id)
+{
+    $cours = \App\Models\cour::with('matiere')->findOrFail($id);
+
+    // sécurité : l'enseignant ne peut pas accéder au cours d'un autre
+    if ($cours->user_id !== auth()->id()) {
+        abort(403);
+    }
+
+    $etudiants = \App\Models\User::where('role', 'etudiant')
+        ->where('niveau', $cours->niveau)
+        ->with(['notes' => function($q) use ($cours) {
+            $q->where('matiere_id', $cours->matiere_id);
+        }])
+        ->orderBy('nom')
+        ->get();
+
+    return view('rabieta.enseignant.enseignant_saisi', compact('cours', 'etudiants'));
+}
+
+public function sauvegarderNotes(\Illuminate\Http\Request $req, $id)
+{
+    $cours = \App\Models\cour::findOrFail($id);
+
+    if ($cours->user_id !== auth()->id()) {
+        abort(403);
+    }
+
+    foreach ($req->notes as $etudiantId => $valeur) {
+        if ($valeur === null || $valeur === '') continue;
+
+        \App\Models\Note::updateOrCreate(
+            ['user_id' => $etudiantId, 'matiere_id' => $cours->matiere_id],
+            ['valeur_note' => $valeur]
+        );
+    }
+
+    return back()->with('success', 'Notes enregistrées !');
+}
 }
