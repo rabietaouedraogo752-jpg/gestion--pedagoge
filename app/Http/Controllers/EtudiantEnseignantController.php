@@ -6,15 +6,17 @@ use Illuminate\Http\Request;
 
 class EtudiantEnseignantController extends Controller
 {
+  // ETUDIANTS
      public function indexEtudiants(Request $mottape)
   {
-    // cette ligne me permet de récuperer le mot clé tapé
+
     $recherche = $mottape->get('search');
 
     
 
     
     $niveau = $mottape->get('niveau');
+    // JE PARS de tous les étudiants puis je filtre
     $demande = \App\Models\User::where('role', 'etudiant');
     if ($recherche) {
         $demande->where(function($query) use ($recherche) {
@@ -70,7 +72,7 @@ class EtudiantEnseignantController extends Controller
         'adresse' =>$donneesSaisies->adresse,
         'date_naissance' =>$donneesSaisies->date_naissance,
     ]);
-    return redirect('/etudiants')->with('success', 'étudiant(e) mise à jour!');
+    return redirect('/etudiants')->with('success', 'étudiant(e) mis(e) à jour!');
   }
   public function destroyEtudiant($id)
   {
