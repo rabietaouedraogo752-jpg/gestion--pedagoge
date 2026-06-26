@@ -9,21 +9,24 @@
                   <h3 class="fw-bold text-primary">
                       <i class="bi bi-grid me-2"></i>Tableau de bord
                   </h3>
-                
                 </div>
-    
-                <div>
                 
-                <!-- Ton bouton d'action vers les modules -->
-                    <a href="{{ url('/etudiants') }}" class="btn btn-primary shadow-sm">
+                <!-- 🛠️ LES BOUTONS D'ACTIONS ALIGNÉS -->
+                <div class="d-flex gap-2">
+                   <a href="/admin/informations" class="btn btn-warning text-dark shadow-sm fw-bold">
+   <i class="bi bi-bell-fill me-1"></i> Informations
+</a>
+ 
+                    <!-- Ton bouton d'action vers les modules de gestion -->
+                    <a href="{{ url('/etudiants') }}" class="btn btn-primary shadow-sm fw-bold">
                        <i class="bi bi-box-arrow-in-right me-1"></i> Accéder aux modules
                     </a>
                 </div>
-               
             </div>
              <p class="text-muted">Bienvenue, <strong>{{ Auth::user()->nom }} {{ Auth::user()->prenom }}</strong> !</p>
         </div>
     </div>
+    
     <div class="row g-4 mb-4">
         <div class="col-md-3">
             <div class="card border-0 shadow-sm" style="border-left:4px solid #0d6efd !important;">
@@ -106,7 +109,7 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row mb-4">
         <div class="col-12">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-0 pt-3">
@@ -129,7 +132,7 @@
                             @forelse($derniersInscrits ?? [] as $index => $u)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ $u->nom_complet }}</td>
+                                <td>{{ $u->nom }} {{ $u->prenom }}</td>
                                 <td>{{ $u->email }}</td>
                                 <td>
                                     @if($u->role == 'admin')
@@ -141,12 +144,11 @@
                                     @endif
                                 </td>
                                 <td>{{ $u->created_at ? $u->created_at->format('d/m/Y H:i') : 'Date inconnue' }}</td>
-
                             </tr>
                             @empty
                             <tr>
                                 <td colspan="5" class="text-center text-muted py-3">
-                                    Aucun utilisateur
+                                    Aucun utilisateur inscrit
                                 </td>
                             </tr>
                             @endforelse
@@ -161,7 +163,7 @@
 
 @push('scripts')
 @if(Auth::user()->isAdmin())
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://jsdelivr.net"></script>
 <script>
     new Chart(document.getElementById('chartInscriptions').getContext('2d'), {
         type: 'bar',
@@ -193,12 +195,7 @@
             ],
             datasets: [{
                 data: @json($rolesData ?? []),
-                backgroundColor: [
-                    'rgba(25,135,84,0.8)',
-                    'rgba(255,193,7,0.8)',
-                    'rgba(220,53,69,0.8)',
-                ],
-                borderWidth: 2,
+                backgroundColor: ['#198754', '#ffc107', '#dc3545'],
             }]
         },
         options: {

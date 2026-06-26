@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -12,19 +13,6 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         $data = [];
-        if ($user->role == 'etudiant') {
-            $mesNotes = \App\Models\Note::where('user_id', $user->id)->with('matiere')->get();
-            $mesCours = \App\Models\Cour::where('niveau', $user->niveau)->with('matiere')->get();
-            $toutesMatieres = \App\Models\Matiere::all();
-            
-            return view('rabieta.etudiant.accueil', compact('mesNotes', 'mesCours', 'toutesMatieres'));
-        }
-        
-        if ($user->role == 'enseignant') {
-            $mesCours = \App\Models\Cour::where('user_id', $user->id)->with('matiere')->get();
-            
-            return view('rabieta.enseignant.accueil', compact('mesCours'));
-        }
 
         // Données communes à tous les rôles
         $data['totalEtudiants']    = User::where('role', 'etudiant')->count();
@@ -32,9 +20,10 @@ class DashboardController extends Controller
         $data['totalAdmins']       = User::where('role', 'admin')->count();
         $data['totalUtilisateurs'] = User::count();
 
-        // Données uniquement pour l'admin
-        if ($user->isAdmin()) {
-
+        // -------------------------------------------------------------
+        // LOGIQUE COMMUNE POUR L'ADMIN (STATISTIQUES DE DAVY)
+        // -------------------------------------------------------------
+        if ($user->role == 'admin') {
             // Inscriptions par mois
             $inscriptionsParMois = User::select(
                     DB::raw('MONTH(created_at) as mois'),
@@ -74,10 +63,64 @@ class DashboardController extends Controller
 
             // Derniers inscrits
             $data['derniersInscrits'] = User::orderBy('created_at', 'desc')->take(5)->get();
+
+            // 🚨 SÉCURITÉ ADMIN : On ajoute les annonces pour alimenter son espace_informations
+            $data['annonces'] = \App\Models\Annonce::orderBy('created_at', 'desc')->get();
+
+            // On renvoie la vue Admin de Davy avec TOUTES les données ($data)
+            return view('davy.gestion.dashboard', $data);
         }
 
-        return view('davy.gestion.dashboard', $data);
-        
-        
+        // -------------------------------------------------------------
+        // AIGUILLAGE PAR RÔLES (TES MODULES - RABIETA)
+        // -------------------------------------------------------------
+
+        // 1. SI C'EST UN ÉTUDIANT
+        if ($user->role == 'etudiant') {
+            $mesNotes = \App\Models\Note::where('user_id', $user->id)->with('matiere')->get();
+            $mesCours = \App\Models\Cour::where('filiere', $user->niveau)->with('matiere')->get();
+                        
+            $toutesMatieres = \App\Models\Matiere::all();
+            $annonces = \App\Models\Annonce::where('cible_niveau', $user->niveau)
+                ->orWhereNull('cible_niveau')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return view('rabieta.etudiant.accueil', compact('mesNotes', 'mesCours', 'toutesMatieres', 'annonces'));
+        }
+
+        // 2. SI C'EST UN ENSEIGNANT
+        if ($user->role == 'enseignant') {
+            $chefDepartement = \App\Models\Departement::where('chef_id', $user->id)->first();
+
+            // CAS A : ENSEIGNANT CHEF DE DÉPARTEMENT
+            if ($chefDepartement) {
+                $filieres = array_map('trim', explode(',', $chefDepartement->filieres)); 
+
+                $totalFilieres = count($filieres);
+                $totalEtudiantsDept = \App\Models\User::where('role', 'etudiant')->whereIn('niveau', $filieres)->count();
+                $coursIds = \App\Models\Cour::whereIn('niveau', $filieres)->pluck('user_id')->unique();
+                $totalEnseignantsDept = \App\Models\User::whereIn('id', $coursIds)->count();
+                $totalCoursDept = \App\Models\Cour::whereIn('niveau', $filieres)->count();
+
+                // On récupère toutes les annonces de la base pour le flux de gestion du chef
+                $annonces = \App\Models\Annonce::orderBy('created_at', 'desc')->get();
+
+                return view('rabieta.chef.accueil', compact(
+                    'chefDepartement', 'filieres', 'totalFilieres', 
+                    'totalEtudiantsDept', 'totalEnseignantsDept', 'totalCoursDept', 'annonces'
+                ));
+            }
+
+            // CAS B : ENSEIGNANT CLASSIQUE / SIMPLE
+            $mesCours = \App\Models\Cour::where('user_id', $user->id)->with('matiere')->get();
+            $annonces = \App\Models\Annonce::orderBy('created_at', 'desc')->take(10)->get();
+            
+            // 🚨 RECTIFICATION : On ajoute 'annonces' à l'intérieur de la fonction compact() !
+            return view('rabieta.enseignant.accueil', compact('mesCours', 'annonces'));
+        }
+
+        // Sécurité par défaut
+        return redirect('/');
     }
 }

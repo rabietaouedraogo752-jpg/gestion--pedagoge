@@ -66,7 +66,7 @@ class NoteController extends Controller
 {
     $cours = \App\Models\cour::with('matiere')->findOrFail($id);
 
-    // sécurité : l'enseignant ne peut pas accéder au cours d'un autre
+    // l'enseignant ne peut pas accéder au cours d'un autre
     if ($cours->user_id !== auth()->id()) {
         abort(403);
     }

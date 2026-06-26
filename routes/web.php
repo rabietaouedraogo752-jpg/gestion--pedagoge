@@ -49,6 +49,9 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/modifier', [ProfilController::class, 'update'])->name('update');
         Route::put('/mot-de-passe', [ProfilController::class, 'updatePassword'])->name('password');
     });
+    Route::get('/admin/informations', [App\Http\Controllers\DepartementController::class, 'adminInformations']);
+    Route::post('/admin/annonces/enregistrer', [App\Http\Controllers\DepartementController::class, 'storeAnnonceAdmin']);
+
 
 });
 
@@ -58,6 +61,10 @@ Route::middleware(['auth'])->group(function () {
 | ROUTES ADMIN
 |--------------------------------------------------------------------------
 */
+// DEPARTEMENTS
+Route::get('/departements', [App\Http\Controllers\DepartementController::class, 'index']);
+Route::get('/departements/creer', [App\Http\Controllers\DepartementController::class, 'create']);
+Route::post('/departements/envoyer', [App\Http\Controllers\DepartementController::class, 'store']);
 
 Route::middleware(['auth','role:admin'])->group(function () {
 
@@ -123,6 +130,25 @@ Route::middleware(['auth','role:enseignant'])->group(function () {
      Route::post('/enseignant/cours/{id}/notes',
     [NoteController::class, 'sauvegarderNotes']);
 });
+// Vérifie qu'il n'y a aucun espace ou lettre en trop dans 'role:enseignant'
+Route::middleware(['auth', 'role:enseignant'])->group(function () {
+    Route::get('/chef/filieres', [App\Http\Controllers\DepartementController::class, 'listeFilieres']);
+    Route::get('/chef/etudiants', [App\Http\Controllers\DepartementController::class, 'listeEtudiants']);
+    Route::get('/chef/enseignants', [App\Http\Controllers\DepartementController::class, 'listeEnseignants']);
+});
+Route::middleware(['auth', 'role:enseignant'])->group(function () {
+    // ... tes autres routes chef (filieres, etudiants, enseignants) ...
+
+    // Autoriser le Chef à afficher le formulaire et enregistrer l'emploi du temps
+    Route::get('/cours/creer', [App\Http\Controllers\CourController::class, 'create']);
+    Route::post('/cours/envoyer', [App\Http\Controllers\CourController::class, 'store']);
+});
+Route::middleware(['auth', 'role:enseignant'])->group(function () {
+    // ... tes autres routes de gestion du chef ...
+
+    // AUTORISER LE CHEF À VOIR LA LISTE GÉNÉRALE DES COURS SANS CODE 403
+    Route::get('/cours', [App\Http\Controllers\CourController::class, 'index']);
+});
 
 
 /*
@@ -135,4 +161,11 @@ Route::middleware(['auth','role:etudiant'])->group(function () {
 
     Route::get('/etudiant/cours/{id}',
         [CourController::class, 'afficherDétails']);
+});
+Route::middleware(['auth', 'role:enseignant'])->group(function () {
+    // Emploi du temps (Création par le Chef)
+    Route::get('/chef/emplois', [App\Http\Controllers\CourController::class, 'index']); // Réutilise ton module de gestion des cours existant
+    
+    // Annonces
+    Route::post('/chef/annonces/envoyer', [App\Http\Controllers\DepartementController::class, 'storeAnnonce'])->middleware('auth');
 });

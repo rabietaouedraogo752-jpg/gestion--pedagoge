@@ -6,7 +6,7 @@
         <div class="card">
             <div class="card-header bg-primary text-white text-center py-4">
                 <i class="bi bi-mortarboard-fill" style="font-size:2.5rem;"></i>
-                <h4 class="mt-2 mb-0">Gestion École</h4>
+                <h4 class="mt-2 mb-0">PedaFaso</h4>
             </div>
             <div class="card-body p-4">
                 <form method="POST" action="{{ route('login') }}">

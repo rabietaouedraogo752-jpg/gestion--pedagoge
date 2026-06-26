@@ -21,7 +21,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
         <a class="navbar-brand fw-bold" href="{{ route('dashboard') }}">
-            <i class="bi bi-mortarboard-fill me-2"></i>GestionÉcole
+            <i class="bi bi-mortarboard-fill me-2"></i>PedaFaso
         </a>
         <div class="ms-auto d-flex align-items-center gap-3">
             <span class="text-white">

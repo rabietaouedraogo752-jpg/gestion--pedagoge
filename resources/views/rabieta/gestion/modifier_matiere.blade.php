@@ -10,7 +10,7 @@
     
     <div class="mb-3">
         <label for="coef" class="form-label">Coefficient</label>
-        <input type="number" name="coefficient" class="form-contro" value="{{ $laMatiere->coefficient }}">
+        <input type="number" name="coefficient" class="form-control" value="{{ $laMatiere->coefficient }}">
     </div>
     <button type="submit" class="btn btn-success mb-3">Mettre à jour</button> 
     <a href="/matieres" class="btn btn-secondary">Annuler</a>

@@ -21,6 +21,8 @@ return new class extends Migration
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
+            $table->string('niveau', 50)->nullable(); 
+            $table->string('specialite')->nullable();
         });
     }
 

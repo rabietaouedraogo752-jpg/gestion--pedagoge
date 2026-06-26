@@ -33,7 +33,7 @@
 </style>
 
 <div class="container-fluid py-4">
-    <!-- 1.  mon TABLEAU DE BORD (En-tête) -->
+    <!-- j'ai mis ce bloc qui controle l'affichage du tableau de bord-->
     <div class="row mb-4">
         <div class="col-12">
             <div class="bg-white p-3 border rounded d-flex justify-content-between align-items-center">
@@ -44,12 +44,37 @@
             </div>
         </div>
     </div>
+        <!-- 📑 À AJOUTER ICI : BARRE DES ONGLES INTERACTIFS -->
+    <ul class="nav nav-tabs mb-4" id="studentTab" role="tablist" style="border-bottom: 2px solid #eeeeee;">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold text-primary" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-content" type="button" role="tab" aria-controls="home-content" aria-selected="true">
+                <i class="bi bi-grid-1x2-fill me-2"></i>Mes Cours & Notes
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold text-secondary" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule-content" type="button" role="tab" aria-controls="schedule-content" aria-selected="false">
+                <i class="bi bi-calendar3 me-2"></i>Emploi du temps complet
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold text-secondary" id="announcements-tab" data-bs-toggle="tab" data-bs-target="#announcements-content" type="button" role="tab" aria-controls="announcements-content" aria-selected="false">
+                <i class="bi bi-bell-fill text-danger me-2"></i>Annonces & Communiqués
+            </button>
+        </li>
+    </ul>
+
+    <!-- 📦 OUVERTURE DE l'ENVELOPPE DES CONTENUS -->
+    <div class="tab-content" id="studentTabContent">
+        
+        <!-- === CONTENU ONGLET 1 : TON AFFICHAGE ACTUEL === -->
+        <div class="tab-pane fade show active" id="home-content" role="tabpanel" aria-labelledby="home-tab">
+
 
     <div class="row g-4">
     
         <div class="col-lg-8 border">
             
-            <!-- 2. MES COURS (Design Cartes/Vignettes) -->
+            <!-- Ce bloc me permets de controller la partie de mes cours-->
             <h5 class="section-title">Mes cours ({{ Auth::user()->niveau }})</h5>
             <div class="row g-3 mb-5">
                 @forelse($mesCours as $c)
@@ -82,7 +107,7 @@
             
         </div>
 
-        <!-- COLONNE DROITE (4/12) : CHRONOLOGIE ET NOTES -->
+        <!-- Ce bloc est dedié à l'affichage de l'emploi du temps et des notes-->
         <div class="col-lg-4 ">
             <h5 class="section-title">Emploi du temps de la semaine</h5>
             <div class="card border-0 border">
@@ -110,7 +135,7 @@
                 </div>
             </div>
             
-            <!-- 5. MES NOTES -->
+            <!-- c'est le bloc de controlle spécifique des notes -->
             <h5 class="section-title">Mes Notes</h5>
             <div class="card border-0 border">
                 <div class="card-body p-0">
@@ -135,4 +160,70 @@
         </div>
     </div>
 </div>
+        </div> <!-- FERMETURE DE L'ONGLET 1 -->
+
+        <!-- === CONTENU ONGLET 2 : EMPLOI DU TEMPS EN GRAND === -->
+        <div class="tab-pane fade" id="schedule-content" role="tabpanel" aria-labelledby="schedule-tab">
+            <h5 class="section-title"><i class="bi bi-calendar3 me-2"></i>Mon Planning Hebdomadaire</h5>
+            <div class="card border shadow-sm bg-white">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle mb-0">
+                        <thead class="table-primary">
+                            <tr>
+                                <th class="ps-3">Jour</th>
+                                <th>Matière / Module</th>
+                                <th>Cours / Code</th>
+                                <th>Plage Horaire</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($mesCours as $c)
+                            <tr>
+                                <td class="fw-bold text-primary ps-3">{{ $c->jour }}</td>
+                                <td class="fw-semibold">{{ $c->matiere->nom_matiere ?? 'Général' }}</td>
+                                <td>{{ $c->titre }}</td>
+                                <td><span class="badge bg-light text-dark border p-2 font-monospace">{{ $c->horaire }}</span></td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">
+                                    <i class="bi bi-calendar-x me-2"></i>Aucun emploi du temps disponible pour le moment.
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- === CONTENU ONGLET 3 : TABLEAU DES ANNONCES === -->
+        <div class="tab-pane fade" id="announcements-content" role="tabpanel" aria-labelledby="announcements-tab">
+            <h5 class="section-title"><i class="bi bi-megaphone-fill me-2"></i>Tableau d'affichage du Département</h5>
+            <div class="row g-3">
+                @forelse($annonces as $a)
+                    <div class="col-12">
+                        <div class="p-3 bg-white rounded shadow-sm border border-start border-4 border-danger">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold text-dark mb-0">{{ $a->titre }}</h6>
+                                <small class="text-muted font-monospace" style="font-size: 0.75rem;">
+                                    <i class="bi bi-calendar3 me-1"></i>{{ $a->created_at->format('d/m/Y') }}
+                                </small>
+                            </div>
+                            <p class="text-secondary mb-0 small">{{ $a->contenu }}</p>
+                        </div>
+                    </div>
+                @empty
+                    <div class="col-12">
+                        <div class="alert alert-light text-center py-5 border shadow-sm bg-white">
+                            <i class="bi bi-chat-left-dots text-muted" style="font-size: 2rem;"></i>
+                            <p class="text-muted mt-2 mb-0">Aucun communiqué officiel n'a été publié pour votre filière.</p>
+                        </div>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+
+    </div> <!-- FERMETURE FINALE DE L'ENVELOPPE DES CONTENUS -->
+
 @endsection

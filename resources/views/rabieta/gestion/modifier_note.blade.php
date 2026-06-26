@@ -10,12 +10,12 @@
     
     <div class="mb-3">
         <label class="form-label">Matière</label>
-        <input type="text" class="form-contro" value="{{ $note->matiere->nom_matiere }}" readonly>
+        <input type="text" class="form-control" value="{{ $note->matiere->nom_matiere }}" readonly>
     </div>
 
     <div class="mb-3">
         <label for="valeur_note" class="form-label">Note</label>
-        <input type="number" name="valeur_note" class="form-contro" value="{{ $note->valeur_note}}" required>
+        <input type="number" name="valeur_note" class="form-control" value="{{ $note->valeur_note}}" required>
     </div>
     <button type="submit" class="btn btn-success mb-3">Mettre à jour</button> 
     <a href="/notes" class="btn btn-secondary">Annuler</a>

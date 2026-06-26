@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class Matiere extends Model
 {
     use HasFactory;
-    Protected $fillable = ['nom_matiere', 'coefficient'];
+    Protected $fillable = ['nom_matiere', 'coefficient', 'filiere'];
 }

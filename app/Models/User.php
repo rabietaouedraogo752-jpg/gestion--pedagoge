@@ -28,7 +28,9 @@ class User extends Authenticatable
         'date_naissance',
         'adresse',
         'photo',
-        'niveau'
+        'niveau',
+        'specialite',
+        'filière',
     ];
 
     /**
@@ -36,7 +38,7 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    //elle se charge de cacher les colonnes lorsqu'on éssaie de récuperer un utilisateur
+    
     protected $hidden = [
         'password',
         'remember_token',
@@ -51,7 +53,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    //un bloc pour informer qu'un étudiant(e) peut avoir plusieurs notes
+    // un étudiant peut avoir plusieurs notes
     public function notes()
     {
         return $this->hasMany(\App\Models\Note::class);

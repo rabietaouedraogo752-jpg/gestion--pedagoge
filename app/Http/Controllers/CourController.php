@@ -14,25 +14,41 @@ class CourController extends Controller
 {
     $recherche = $mottape->get('search');
     $niveauchoisi = $mottape->get('niveau');
+    $user = auth()->user();
 
-    // 1. On PRÉPARE la requête (SANS le ->get() pour l'instant)
-    $demande= \App\Models\Cour::with(['matiere', 'enseignant']);
+    // 1. On prépare la requête de base
+    $demande = \App\Models\Cour::with(['matiere', 'enseignant']);
 
-    // 2. On ajoute les conditions SI elles existent
+        // SECTORISATION : Filtrage ultra-sécurisé contre les espaces invisibles
+    if ($user->role == 'enseignant') {
+        $chefDepartement = \App\Models\Departement::where('chef_id', $user->id)->first();
+        
+        if ($chefDepartement) {
+            // Le array_map('trim', ...) élimine TOUS les espaces invisibles au début et à la fin des mots
+            $filieres = array_map('trim', explode(',', $chefDepartement->filieres));
+            
+            $demande->whereIn('filiere', $filieres);
+        } else {
+            $demande->where('user_id', $user->id);
+        }
+    }
+
+
+    // 3. Filtres de recherche optionnels
     if ($recherche) {
-        // Attention : dans ta table 'cours', c'est sûrement 'titre' et non 'nom'
-        $demande->where('titre', 'LIKE', "%{$recherche}%");
+        $demande->where('filiere', 'LIKE', "%{$recherche}%");
     } 
 
     if ($niveauchoisi) {
         $demande->where('niveau', $niveauchoisi);
     }
 
-    // 3. On exécute ENFIN la requête avec ->get()
-    $les_cours = $demande->orderBy('titre', 'asc')->get();
+    $les_cours = $demande->orderBy('jour', 'asc')->get();
     
     return view('rabieta.gestion.liste_des_cours', compact('les_cours'));
 }
+
+
 
   public function create()
     {
@@ -40,19 +56,20 @@ class CourController extends Controller
         $toutesMatieres = \App\Models\Matiere::all();
         return view('rabieta.gestion.creer_cour', compact('enseignants', 'toutesMatieres'));
     }
-    public function store(Request $donneesSaisies)
+      public function store(Request $donneesSaisies)
   {
     \App\Models\cour::create([
-        'titre'       => $donneesSaisies->titre,
+        // ON SUPPRIME la ligne 'titre' et 'description' car elles n'existent pas en BDD
         'niveau'      => $donneesSaisies->niveau,
         'matiere_id'  => $donneesSaisies->matiere_id,
         'user_id'     => $donneesSaisies->user_id,
-        'description' => $donneesSaisies->description,
-        'jour'     => $donneesSaisies->jour,
-        'horaire' => $donneesSaisies->horaire,
+        'jour'        => $donneesSaisies->jour,
+        'horaire'     => $donneesSaisies->horaire,
     ]);
-    return redirect('/cours')->with('success', 'cours ajoutée !');
+    
+    return redirect('/cours')->with('success', 'Cours ajouté à l\'emploi du temps !');
   }
+
   public function edit($id)
   {
     $leCour= \App\Models\cour::findOrFail($id);

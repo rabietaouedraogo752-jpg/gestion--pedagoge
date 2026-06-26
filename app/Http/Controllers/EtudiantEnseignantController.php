@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 
 class EtudiantEnseignantController extends Controller
 {
-  // ETUDIANTS
+  // Partie étudiants
      public function indexEtudiants(Request $mottape)
   {
 
@@ -34,25 +34,47 @@ class EtudiantEnseignantController extends Controller
     
   }
   public function createEtudiant()
-  {
-    return view('rabieta.gestion.creer_etudiant');
-  }
-  public function storeEtudiant(Request $donneesSaisies)
-  {
+{
+    // 1. On récupère tous les départements
+    $departements = \App\Models\Departement::all();
+    $toutesLesFilieres = [];
+
+    // 2. On extrait proprement les filières sans doublons
+    foreach ($departements as $dept) {
+        if ($dept->filieres) {
+            $filieresTableau = explode(',', $dept->filieres);
+            foreach ($filieresTableau as $filiere) {
+                $filiereNettoyee = trim($filiere);
+                if (!empty($filiereNettoyee) && !in_array($filiereNettoyee, $toutesLesFilieres)) {
+                    $toutesLesFilieres[] = $filiereNettoyee;
+                }
+            }
+        }
+    }
+    sort($toutesLesFilieres);
+
+    return view('rabieta.gestion.creer_etudiant', compact('departements', 'toutesLesFilieres'));
+}
+
+public function storeEtudiant(Request $donneesSaisies)
+{
     \App\Models\User::create([
-        'nom' => $donneesSaisies->nom,
-        'prenom' => $donneesSaisies->prenom,
-        'email' => $donneesSaisies->email,
-        // ici le mot de passe sera remplacé par une autre autre cryptée avec bcrypt
-        'password'=>bcrypt($donneesSaisies->password),
-        'role'=> 'etudiant',
-        'telephone' =>'telephone',
-        'niveau' =>'niveau',
-        'adresse' =>'adresse',
-         'date_naissance' => \Carbon\Carbon::parse($donneesSaisies->date_naissance)->format('Y-m-d'),
+        'nom'            => $donneesSaisies->nom,
+        'prenom'         => $donneesSaisies->prenom,
+        'email'          => $donneesSaisies->email,
+        'password'       => bcrypt($donneesSaisies->password),
+        'role'           => 'etudiant',
+        'telephone'      => $donneesSaisies->telephone,
+        'adresse'        => $donneesSaisies->adresse,
+        'filiere'        => $donneesSaisies->filiere_choisie, // La spécialité (ex: Génie Logiciel)
+        'niveau'         => $donneesSaisies->niveau,          // L'année d'étude (ex: Licence 2)
+        'departement_id' => $donneesSaisies->departement_id,
+        'date_naissance' => \Carbon\Carbon::parse($donneesSaisies->date_naissance)->format('Y-m-d'),
     ]);
-    return redirect('/etudiants')->with('success', 'étudiant(e) ajouté(e) !');
-  }
+
+    return redirect('/etudiants')->with('success', 'Étudiant(e) inscrit(e) avec succès !');
+}
+
   public function editEtudiant($id)
   {
     //la fonction findOrFail permet de chercher l'id précis de l'étudiant 
@@ -81,6 +103,8 @@ class EtudiantEnseignantController extends Controller
 
     return redirect('/etudiants')->with('success', 'étudiant(e) supprimé(e)!');
   }
+  
+  //Partie enseignant
   
   public function indexEnseignants(Request $mottape)
   {

@@ -15,12 +15,12 @@
                         <h5 class="mb-0 fw-bold text-danger">Chapitre {{ $index + 1 }} : {{ $chapitre->titre_du_chapitre }}</h5>
                     </div>
                     <div class="card-body">
-                        <!-- Affichage du texte du cours -->
+                        <!-- je vais permettre  d'afficher le contenu du texte-->
                         <div class="mb-4" style="white-space: pre-line; line-height: 1.6;">
                             {{ $chapitre->contenu_du_cours }}
                         </div>
 
-                        <!-- Bouton de téléchargement du PDF si existant -->
+                        <!-- je mets un bouton de téléchargement si le cours a du contenu-->
                         @if($chapitre->fichier_joint)
                             <div class="p-3 bg-light rounded d-flex justify-content-between align-items-center border">
                                 <div>
