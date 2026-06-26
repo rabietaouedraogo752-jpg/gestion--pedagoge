@@ -78,7 +78,14 @@ class DashboardController extends Controller
         // 1. SI C'EST UN ÉTUDIANT
         if ($user->role == 'etudiant') {
             $mesNotes = \App\Models\Note::where('user_id', $user->id)->with('matiere')->get();
-            $mesCours = \App\Models\Cour::where('filiere', $user->niveau)->with('matiere')->get();
+            $mesCours = \App\Models\Cour::where(function($q) use ($user) {
+                            // Il cherche si la filière du cours est "Informatique" (sa spécialité)
+                            $q->where('filiere', $user->specialite)
+                              ->orWhere('filiere', $user->filiere);
+                        })
+                        ->where('niveau', $user->niveau) // Et il valide que c'est bien pour la "Licence 1"
+                        ->with('matiere')
+                        ->get();
                         
             $toutesMatieres = \App\Models\Matiere::all();
             $annonces = \App\Models\Annonce::where('cible_niveau', $user->niveau)
@@ -90,33 +97,41 @@ class DashboardController extends Controller
         }
 
         // 2. SI C'EST UN ENSEIGNANT
-        if ($user->role == 'enseignant') {
+                // -------------------------------------------------------------
+        // 2. SI C'EST UN CHEF DE DÉPARTEMENT (NOUVEAU RÔLE ISOLÉ)
+        // -------------------------------------------------------------
+        if ($user->role == 'chef_departement') {
             $chefDepartement = \App\Models\Departement::where('chef_id', $user->id)->first();
+            $filieres = $chefDepartement ? array_map('trim', explode(',', $chefDepartement->filieres)) : []; 
 
-            // CAS A : ENSEIGNANT CHEF DE DÉPARTEMENT
-            if ($chefDepartement) {
-                $filieres = array_map('trim', explode(',', $chefDepartement->filieres)); 
+            $totalFilieres = count($filieres);
+                    // 2. Nombre d'étudiants inscrits dans les filières du département
+        $totalEtudiantsDept = \App\Models\User::where('role', 'etudiant')
+            ->where(function($q) use ($filieres) {
+                $q->whereIn('filiere', $filieres)
+                  ->orWhereIn('specialite', $filieres); // Sécurité pour chercher dans 'specialite' (ex: Informatique)
+            })
+            ->count();
 
-                $totalFilieres = count($filieres);
-                $totalEtudiantsDept = \App\Models\User::where('role', 'etudiant')->whereIn('niveau', $filieres)->count();
-                $coursIds = \App\Models\Cour::whereIn('niveau', $filieres)->pluck('user_id')->unique();
-                $totalEnseignantsDept = \App\Models\User::whereIn('id', $coursIds)->count();
-                $totalCoursDept = \App\Models\Cour::whereIn('niveau', $filieres)->count();
+            $coursIds = \App\Models\Cour::whereIn('niveau', $filieres)->pluck('user_id')->unique();
+            $totalEnseignantsDept = \App\Models\User::whereIn('id', $coursIds)->count();
+            $totalCoursDept = \App\Models\Cour::whereIn('niveau', $filieres)->count();
 
-                // On récupère toutes les annonces de la base pour le flux de gestion du chef
-                $annonces = \App\Models\Annonce::orderBy('created_at', 'desc')->get();
+            $annonces = \App\Models\Annonce::orderBy('created_at', 'desc')->get();
 
-                return view('rabieta.chef.accueil', compact(
-                    'chefDepartement', 'filieres', 'totalFilieres', 
-                    'totalEtudiantsDept', 'totalEnseignantsDept', 'totalCoursDept', 'annonces'
-                ));
-            }
+            return view('rabieta.chef.accueil', compact(
+                'chefDepartement', 'filieres', 'totalFilieres', 
+                'totalEtudiantsDept', 'totalEnseignantsDept', 'totalCoursDept', 'annonces'
+            ));
+        }
 
-            // CAS B : ENSEIGNANT CLASSIQUE / SIMPLE
+        // -------------------------------------------------------------
+        // 3. SI C'EST UN ENSEIGNANT CLASSIQUE / SIMPLE
+        // -------------------------------------------------------------
+        if ($user->role == 'enseignant') {
             $mesCours = \App\Models\Cour::where('user_id', $user->id)->with('matiere')->get();
             $annonces = \App\Models\Annonce::orderBy('created_at', 'desc')->take(10)->get();
             
-            // 🚨 RECTIFICATION : On ajoute 'annonces' à l'intérieur de la fonction compact() !
             return view('rabieta.enseignant.accueil', compact('mesCours', 'annonces'));
         }
 

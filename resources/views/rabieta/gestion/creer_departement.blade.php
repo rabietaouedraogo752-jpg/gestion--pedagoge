@@ -20,7 +20,7 @@
         <div class="mb-3">
             <label class="form-label fw-bold">Chef de Département</label>
             <select name="chef_id" class="form-select" required>
-                <option value="">-- Sélectionner un enseignant --</option>
+                <option value="">-- Sélectionner un chef de département--</option>
                 @foreach($enseignants as $e)
                     <option value="{{ $e->id }}">{{ $e->prenom }} {{ $e->nom }}</option>
                 @endforeach

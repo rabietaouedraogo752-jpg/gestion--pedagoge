@@ -80,11 +80,13 @@
                     <td class="text-center">
                         <a href="/cours/modifier/{{ $c->id }}" class="btn btn-sm btn-info text-white me-1">Modifier</a>
                         
-                        <form action="/cours/supprimer/{{ $c->id }}" method="POST" class="d-inline">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer ce cours de l\'emploi du temps ?')">Supprimer</button>
-                        </form>
+ <!-- LE NOUVEAU BOUTON À PLACER DANS TON TABLEAU -->
+<a href="/cours/action/supprimer/{{ $c->id }}" class="btn btn-sm btn-danger fw-bold" 
+   onclick="return confirm('Êtes-vous sûr de vouloir retirer ce cours du planning ?')">
+    <i class="bi bi-trash-fill me-1"></i> Supprimer
+</a>
+
+
                     </td>
                 </tr>
                 @empty

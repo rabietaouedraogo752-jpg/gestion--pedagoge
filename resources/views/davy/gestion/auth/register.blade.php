@@ -48,13 +48,13 @@
                         </label>
                         <input type="email" name="email" value="{{ old('email') }}"
                             class="form-control @error('email') is-invalid @enderror"
-placeholder="exemple@email.com">
+                            placeholder="exemple@email.com">
                         @error('email')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
-                    {{-- RÔLE --}}
+                    {{-- RÔLE (Ajout du Chef de Département) --}}
                     <div class="mb-3">
                         <label class="form-label fw-semibold">
                             Rôle <span class="text-danger">*</span>
@@ -65,6 +65,8 @@ placeholder="exemple@email.com">
                             <option value="">-- Sélectionner un rôle --</option>
                             <option value="etudiant"   {{ old('role')=='etudiant'   ? 'selected':'' }}>Étudiant</option>
                             <option value="enseignant" {{ old('role')=='enseignant' ? 'selected':'' }}>Enseignant</option>
+                            <!-- NOUVEAU RÔLE ISOLÉ -->
+                            <option value="chef_departement" {{ old('role')=='chef_departement' ? 'selected':'' }}>Chef de Département</option>
                             <option value="admin"      {{ old('role')=='admin'      ? 'selected':'' }}>Administrateur</option>
                         </select>
                         @error('role')
@@ -72,7 +74,7 @@ placeholder="exemple@email.com">
                         @enderror
                     </div>
 
-                    {{-- NIVEAU D'ÉTUDE (visible uniquement pour étudiant) --}}
+                    {{-- NIVEAU D'ÉTUDE (Modifié pour masquer/afficher selon le rôle) --}}
                     <div class="mb-3" id="niveau-container" style="display:none;">
                         <label class="form-label fw-semibold">
                             Niveau d'étude
@@ -80,7 +82,7 @@ placeholder="exemple@email.com">
                         <input type="text" name="niveau"
                             value="{{ old('niveau') }}"
                             class="form-control @error('niveau') is-invalid @enderror"
-                            placeholder="Ex: Licence 1, Master 2, BTS, Terminale...">
+                            placeholder="Ex: Licence 1, Master 2, BTS...">
                         @error('niveau')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -148,53 +150,51 @@ placeholder="exemple@email.com">
                                     onclick="togglePassword('password_confirmation', 'eye2')">
                                     <i class="bi bi-eye" id="eye2"></i>
                                 </button>
-                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="d-grid mt-2">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="bi bi-person-check me-2"></i>Créer mon compte
-                        </button>
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold">S'inscrire</button>
                     </div>
                 </form>
-            </div>
-            <div class="card-footer text-center py-3 bg-light">
-                Vous avez déjà un compte ?
-                <a href="{{ route('login') }}" class="text-primary fw-semibold">
-                    Se connecter
-                </a>
             </div>
         </div>
     </div>
 </div>
 
-@push('scripts')
+{{-- SCRIPT JAVASCRIPT DE SÉCURITÉ ET D'AFFICHAGE DYNAMIQUE --}}
 <script>
-    // Afficher/masquer niveau d'étude selon le rôle
     function toggleNiveau() {
-        const role = document.getElementById('role').value;
-        const container = document.getElementById('niveau-container');
-        container.style.display = role === 'etudiant' ? 'block' : 'none';
-    }
-
-    // Afficher/masquer mot de passe
-    function togglePassword(fieldId, iconId) {
-        const field = document.getElementById(fieldId);
-        const icon  = document.getElementById(iconId);
-        if (field.type === 'password') {
-            field.type    = 'text';
-            icon.className = 'bi bi-eye-slash';
+        var roleSelect = document.getElementById('role');
+        var niveauContainer = document.getElementById('niveau-container');
+        
+        // On affiche le champ niveau d'étude SEULEMENT si l'utilisateur choisit le rôle "étudiant"
+        if (roleSelect.value === 'etudiant') {
+            niveauContainer.style.display = 'block';
         } else {
-            field.type    = 'password';
-            icon.className = 'bi bi-eye';
+            niveauContainer.style.display = 'none';
         }
     }
 
-    // Au chargement vérifier si rôle déjà sélectionné
-    document.addEventListener('DOMContentLoaded', function() {
-        toggleNiveauEtude();
-    });
+    function togglePassword(inputId, iconId) {
+        var input = document.getElementById(inputId);
+        var icon = document.getElementById(iconId);
+        
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove("bi-eye");
+            icon.classList.add("bi-eye-slash");
+        } else {
+            input.type = "password";
+            icon.classList.remove("bi-eye-slash");
+            icon.classList.add("bi-eye");
+        }
+    }
+
+    // Exécuter au chargement initial si l'ancienne valeur contenait une erreur
+    window.onload = function() {
+        toggleNiveau();
+    };
 </script>
-@endpush
 @endsection

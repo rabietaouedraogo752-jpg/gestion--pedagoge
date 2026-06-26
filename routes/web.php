@@ -31,13 +31,13 @@ Route::post('/deconnexion', [AuthController::class, 'logout'])->name('logout');
 
 /*
 |--------------------------------------------------------------------------
-| ROUTES PROTÉGÉES (UTILISATEUR CONNECTÉ)
+| ROUTES PROTÉGÉES (UTILISATEUR CONNECTÉ DE MANIÈRE GÉNÉRALE)
 |--------------------------------------------------------------------------
 */
 
 Route::middleware(['auth'])->group(function () {
 
-    // Dashboard
+    // Dashboard Commun (L'aiguillage se fait dans le contrôleur)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     /*
@@ -49,10 +49,39 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/modifier', [ProfilController::class, 'update'])->name('update');
         Route::put('/mot-de-passe', [ProfilController::class, 'updatePassword'])->name('password');
     });
+
+    // Communications de l'Administration (Ouvertes aux connectés)
     Route::get('/admin/informations', [App\Http\Controllers\DepartementController::class, 'adminInformations']);
     Route::post('/admin/annonces/enregistrer', [App\Http\Controllers\DepartementController::class, 'storeAnnonceAdmin']);
+    
+    // Route globale partagée pour l'envoi d'annonces (Admin, Chefs et Profs)
+    Route::post('/chef/annonces/envoyer', [App\Http\Controllers\DepartementController::class, 'storeAnnonce']);
+Route::get('/cours', [App\Http\Controllers\CourController::class, 'index']);
+    Route::get('/cours/supprimer/{id}', [App\Http\Controllers\CourController::class, 'destroy']);
+// AJOUTE CETTE LIGNE TOUT EN HAUT DANS LE GROUPE AUTH GENERAL
+Route::get('/cours/action/supprimer/{id}', [App\Http\Controllers\CourController::class, 'supprimerUnCours']);
+
+});
 
 
+/*
+|--------------------------------------------------------------------------
+| ROUTES DU CHEF DE DEPARTEMENT (NOUVEAU BLOC MODULAIRE ISOLÉ)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:chef_departement'])->group(function () {
+    
+    // Listes sectorisées du pôle universitaire
+    Route::get('/chef/filieres', [App\Http\Controllers\DepartementController::class, 'listeFilieres']);
+    Route::get('/chef/etudiants', [App\Http\Controllers\DepartementController::class, 'listeEtudiants']);
+    Route::get('/chef/enseignants', [App\Http\Controllers\DepartementController::class, 'listeEnseignants']);
+    
+    // Planification des volumes horaires et des cours de son pôle
+    Route::get('/cours', [CourController::class, 'index']);
+    Route::get('/cours/creer', [CourController::class, 'create']);
+    Route::post('/cours/envoyer', [CourController::class, 'store']);
+    Route::get('/chef/emplois', [CourController::class, 'index']);
+    
 });
 
 
@@ -61,12 +90,14 @@ Route::middleware(['auth'])->group(function () {
 | ROUTES ADMIN
 |--------------------------------------------------------------------------
 */
-// DEPARTEMENTS
+// DEPARTEMENTS (Gestion structurelle par l'Admin)
 Route::get('/departements', [App\Http\Controllers\DepartementController::class, 'index']);
 Route::get('/departements/creer', [App\Http\Controllers\DepartementController::class, 'create']);
 Route::post('/departements/envoyer', [App\Http\Controllers\DepartementController::class, 'store']);
-
-Route::middleware(['auth','role:admin'])->group(function () {
+Route::get('/departements/modifier/{id}', [App\Http\Controllers\DepartementController::class, 'edit']);
+    Route::put('/departements/modifier/{id}', [App\Http\Controllers\DepartementController::class, 'update']);
+    Route::delete('/departements/supprimer/{id}', [App\Http\Controllers\DepartementController::class, 'destroy']);
+Route::middleware(['auth', 'role:admin'])->group(function () {
 
     // MATIERES
     Route::get('/matieres', [PageMatiereController::class, 'index']);
@@ -100,54 +131,22 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::put('/notes/modifier/{id}', [NoteController::class, 'update']);
     Route::delete('/notes/supprimer/{id}', [NoteController::class, 'destroy']);
 
-    // COURS
-    Route::get('/cours', [CourController::class, 'index']);
-    Route::get('/cours/creer', [CourController::class, 'create']);
-    Route::post('/cours/envoyer', [CourController::class, 'store']);
-    Route::get('/cours/modifier/{id}', [CourController::class, 'edit']);
-    Route::put('/cours/modifier/{id}', [CourController::class, 'update']);
-    Route::delete('/cours/supprimer/{id}', [CourController::class, 'destroy']);
-
 });
 
 
 /*
 |--------------------------------------------------------------------------
-| ROUTES ENSEIGNANT
+| ROUTES ENSEIGNANT CLASSIQUE / SIMPLE
 |--------------------------------------------------------------------------
 */
-
-Route::middleware(['auth','role:enseignant'])->group(function () {
-
-    Route::get('/enseignant/cours/{id}/contenu',
-        [CourController::class, 'creerContenu']);
-
-    Route::post('/contenu/enregistrer',
-    [CourController::class, 'sauvegarderContenu']);
-
-    Route::get('/enseignant/cours/{id}/notes',[NoteController::class, 'indexEnseignant']);
-
-     Route::post('/enseignant/cours/{id}/notes',
-    [NoteController::class, 'sauvegarderNotes']);
-});
-// Vérifie qu'il n'y a aucun espace ou lettre en trop dans 'role:enseignant'
 Route::middleware(['auth', 'role:enseignant'])->group(function () {
-    Route::get('/chef/filieres', [App\Http\Controllers\DepartementController::class, 'listeFilieres']);
-    Route::get('/chef/etudiants', [App\Http\Controllers\DepartementController::class, 'listeEtudiants']);
-    Route::get('/chef/enseignants', [App\Http\Controllers\DepartementController::class, 'listeEnseignants']);
-});
-Route::middleware(['auth', 'role:enseignant'])->group(function () {
-    // ... tes autres routes chef (filieres, etudiants, enseignants) ...
 
-    // Autoriser le Chef à afficher le formulaire et enregistrer l'emploi du temps
-    Route::get('/cours/creer', [App\Http\Controllers\CourController::class, 'create']);
-    Route::post('/cours/envoyer', [App\Http\Controllers\CourController::class, 'store']);
-});
-Route::middleware(['auth', 'role:enseignant'])->group(function () {
-    // ... tes autres routes de gestion du chef ...
-
-    // AUTORISER LE CHEF À VOIR LA LISTE GÉNÉRALE DES COURS SANS CODE 403
-    Route::get('/cours', [App\Http\Controllers\CourController::class, 'index']);
+    Route::get('/enseignant/cours/{id}/contenu', [CourController::class, 'creerContenu']);
+    Route::post('/contenu/enregistrer', [CourController::class, 'sauvegarderContenu']);
+    
+    Route::get('/enseignant/cours/{id}/notes', [NoteController::class, 'indexEnseignant']);
+    Route::post('/enseignant/cours/{id}/notes', [NoteController::class, 'sauvegarderNotes']);
+    
 });
 
 
@@ -156,16 +155,8 @@ Route::middleware(['auth', 'role:enseignant'])->group(function () {
 | ROUTES ETUDIANT
 |--------------------------------------------------------------------------
 */
+Route::middleware(['auth', 'role:etudiant'])->group(function () {
 
-Route::middleware(['auth','role:etudiant'])->group(function () {
-
-    Route::get('/etudiant/cours/{id}',
-        [CourController::class, 'afficherDétails']);
-});
-Route::middleware(['auth', 'role:enseignant'])->group(function () {
-    // Emploi du temps (Création par le Chef)
-    Route::get('/chef/emplois', [App\Http\Controllers\CourController::class, 'index']); // Réutilise ton module de gestion des cours existant
+    Route::get('/etudiant/cours/{id}', [CourController::class, 'afficherDétails']);
     
-    // Annonces
-    Route::post('/chef/annonces/envoyer', [App\Http\Controllers\DepartementController::class, 'storeAnnonce'])->middleware('auth');
 });

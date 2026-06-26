@@ -139,6 +139,19 @@ public function afficherDétails($id)
     
     return view('rabieta.etudiant.voir_contenu_cours', compact('leCour'));
 }
+public function supprimerUnCours($id)
+{
+    // 1. Récupération du cours en base de données
+    $cour = \App\Models\Cour::find($id);
+
+    if ($cour) {
+        // 2. Suppression de la ligne de l'emploi du temps
+        $cour->delete();
+    }
+
+    // 3. Retour automatique sur la page du planning avec un message vert de succès
+    return redirect('/cours')->with('success', 'Le cours a été retiré de l\'emploi du temps avec succès !');
+}
 
 
 }

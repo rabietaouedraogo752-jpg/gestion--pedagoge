@@ -7,7 +7,9 @@
         <div class="d-flex justify-content-between align-items-center">
             <div>
                 <span class="badge bg-light text-primary mb-2 fw-bold">Direction Pédagogique</span>
-                <h2 class="fw-bold">Tableau de Bord : {{ $chefDepartement->nom_departement }}</h2>
+                <!-- À LA LIGNE 10 : On ajoute ?? 'En attente d'affectation' pour éviter le plantage -->
+<h2 class="fw-bold">Tableau de Bord : {{ $chefDepartement->nom_departement ?? 'En attente d\'affectation' }}</h2>
+
                 <p class="mb-0 text-white-50">Statistiques globales et outils de gestion de votre pôle.</p>
             </div>
             <i class="bi bi-speedometer2 text-white-50" style="font-size: 3rem;"></i>
@@ -80,7 +82,7 @@
             <!-- Historique des annonces -->
             <div class="card p-4 border-0 bg-white shadow-sm">
                 <h5 class="fw-bold text-primary mb-3"><i class="bi bi-history me-2"></i>Flux de diffusion</h5>
-                @forelse($dernieresAnnonces as $annonce)
+                @forelse($annonces as $annonce)
                     <div class="border-bottom pb-2 mb-2">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="fw-bold text-dark small">{{ $annonce->titre }}</span>

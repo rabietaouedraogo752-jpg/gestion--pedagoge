@@ -23,7 +23,7 @@ class AuthController extends Controller
             'prenom'         => 'required|string|max:100',
             'email'          => 'required|email|unique:users,email',
             'password'       => ['required', 'confirmed', Password::min(8)],
-            'role'           => 'required|in:admin,enseignant,etudiant',
+            'role'           => 'required|in:admin,enseignant,etudiant,chef_departement',
             'telephone'      => 'nullable|string|max:20',
             'adresse'        => 'nullable|string|max:255',
             'date_naissance' => 'nullable|date|before:today',

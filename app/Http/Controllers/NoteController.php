@@ -7,25 +7,66 @@ use Illuminate\Http\Request;
 class NoteController extends Controller
 {
     public function index(Request $mot)
-    {
-      //je récupère le mot tapé à la barre
-        $motrecherche = $mot->get('search');
-        $niveau = $mot->get('niveau');
-        //ici je prépare la requête
-        $bulletin = \App\Models\User::where('role', 'etudiant')->with('notes.matiere');
-        //pour rechercher une personne, on filtre par son nom
-        if($motrecherche){
-          $bulletin->where('nom', 'LIKE', "%{$motrecherche}%");
-        }
-        if ($niveau) {
-           $bulletin->where('niveau', $niveau);
-        }
+{
+    // 1. On récupère les filtres (attention au nom du paramètre dans l'URL !)
+    $motrecherche = $mot->get('search');
+    $niveau = $mot->get('niveau');
+    
+    // On synchronise : l'URL envoie ?filiere=MPCI
+    $filiereChoisie = $mot->get('filiere'); 
 
-        $etudiants= $bulletin->orderBy('nom','asc')->get();
-        $matieres = \App\Models\Matiere::all();
-        
-        return view('rabieta.gestion.liste_des_notes', compact('etudiants', 'matieres'));
+    // 2. Extraction globale de toutes les filières existantes pour la barre d'onglets
+    $departements = \App\Models\Departement::all();
+    $toutesLesFilieres = [];
+    foreach ($departements as $dept) {
+        if ($dept->filieres) {
+            $tableFiliere = explode(',', $dept->filieres);
+            foreach ($tableFiliere as $f) {
+                $nettoye = trim($f);
+                if (!empty($nettoye) && !in_array($nettoye, $toutesLesFilieres)) {
+                    $toutesLesFilieres[] = $nettoye;
+                }
+            }
+        }
     }
+    sort($toutesLesFilieres);
+
+    // 3. Préparation de la requête des étudiants avec filtrage par spécialité
+    $bulletin = \App\Models\User::where('role', 'etudiant')->with('notes.matiere');
+    
+    if ($motrecherche) {
+        $bulletin->where('nom', 'LIKE', "%{$motrecherche}%");
+    }
+    if ($niveau) {
+        $bulletin->where('niveau', $niveau);
+    }
+    
+    // Filtrage des étudiants selon la filière cliquée
+    if ($filiereChoisie) {
+        $bulletin->where(function($q) use ($filiereChoisie) {
+            $q->where('filiere', $filiereChoisie)
+              ->orWhere('specialite', $filiereChoisie)
+              ->orWhere('niveau', $filiereChoisie);
+        });
+    }
+
+    $etudiants = $bulletin->orderBy('nom', 'asc')->get();
+
+    // 4. CLOISONNEMENT STRICT DES MATIÈRES DANS LES COLONNES
+    if ($filiereChoisie) {
+        // Si l'utilisateur clique sur MPCI, on ne prend QUE la matière qui a 'MPCI' dans sa colonne filiere
+        $matieres = \App\Models\Matiere::where('filiere', $filiereChoisie)
+                    ->orderBy('nom_matiere', 'asc')
+                    ->get();
+    } else {
+        // Si aucun onglet n'est cliqué (Toutes les filières), on affiche tout
+        $matieres = \App\Models\Matiere::orderBy('nom_matiere', 'asc')->get();
+    }
+    
+    return view('rabieta.gestion.liste_des_notes', compact('etudiants', 'matieres', 'toutesLesFilieres'));
+}
+
+
     public function create($user_id, $matiere_id)
     {
         $etudiant = \App\Models\User::findOrFail($user_id);

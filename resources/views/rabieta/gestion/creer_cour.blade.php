@@ -22,7 +22,7 @@
             <div class="col-md-6 mb-3">
                 <label class="form-label">Matière</label>
                 <select name="matiere_id" class="form-select" required>
-                    <option value="">-- Choisir une matière --</option>
+                    <option value="">-- Choisir un module --</option>
                     @foreach($toutesMatieres as $m)
                         <option value="{{ $m->id }}">{{ $m->nom_matiere }}</option>
                     @endforeach

@@ -76,12 +76,30 @@ public function storeEtudiant(Request $donneesSaisies)
 }
 
   public function editEtudiant($id)
-  {
-    //la fonction findOrFail permet de chercher l'id précis de l'étudiant 
-    $etudiant= \App\Models\User::findOrFail($id);
-    
-    return view('rabieta.gestion.modifier_etudiant', compact('etudiant'));
-  }
+{
+    $etudiant = \App\Models\User::findOrFail($id);
+
+    // 1. On récupère les départements pour la liste déroulante
+    $departements = \App\Models\Departement::all();
+    $toutesLesFilieres = [];
+
+    // 2. On extrait proprement les filières textuelles sans doublons
+    foreach ($departements as $dept) {
+        if ($dept->filieres) {
+            $filieresTableau = explode(',', $dept->filieres);
+            foreach ($filieresTableau as $filiere) {
+                $filiereNettoyee = trim($filiere);
+                if (!empty($filiereNettoyee) && !in_array($filiereNettoyee, $toutesLesFilieres)) {
+                    $toutesLesFilieres[] = $filiereNettoyee;
+                }
+            }
+        }
+    }
+    sort($toutesLesFilieres);
+
+    return view('rabieta.gestion.modifier_etudiant', compact('etudiant', 'departements', 'toutesLesFilieres'));
+}
+
   public function updateEtudiant(Request $donneesSaisies, $id)
   {
     $etudiant = \App\Models\User::findOrFail($id);
@@ -92,6 +110,10 @@ public function storeEtudiant(Request $donneesSaisies)
         'telephone' =>$donneesSaisies->telephone,
         'niveau' =>$donneesSaisies->niveau,
         'adresse' =>$donneesSaisies->adresse,
+        'adresse' => $donneesSaisies->adresse,
+        'filiere' => $donneesSaisies->filiere_choisie, 
+        'niveau'  => $donneesSaisies->niveau,          
+        'departement_id' => $donneesSaisies->departement_id,       
         'date_naissance' =>$donneesSaisies->date_naissance,
     ]);
     return redirect('/etudiants')->with('success', 'étudiant(e) mis(e) à jour!');

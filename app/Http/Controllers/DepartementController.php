@@ -8,17 +8,31 @@ use App\Models\User;
 
 class DepartementController extends Controller
 {
-    public function index()
-    {
-        // On récupère tous les départements avec leur chef
-        $departements = Departement::with('chef')->get();
-        return view('rabieta.gestion.liste_des_departements', compact('departements'));
+    public function index(Request $request) // Ajoutez (Request $request) ici
+{
+    // 1. On récupère le mot-clé saisi dans la barre de recherche
+    $recherche = $request->get('search');
+    
+    // 2. On prépare la requête avec la relation chef pour éviter les lenteurs
+    $demande = Departement::with('chef');
+
+    // 3. Si l'utilisateur fait une recherche, on applique les filtres
+    if (!empty($recherche)) {
+        $demande->where('nom_departement', 'LIKE', "%{$recherche}%")
+                ->orWhere('filieres', 'LIKE', "%{$recherche}%");
     }
+
+    // 4. On exécute la requête triée par ordre alphabétique
+    $departements = $demande->orderBy('nom_departement')->get();
+
+    return view('rabieta.gestion.liste_des_departements', compact('departements'));
+}
+
 
     public function create()
     {
         // On récupère uniquement les utilisateurs qui sont enseignants pour la liste déroulante
-        $enseignants = User::where('role', 'enseignant')->get();
+        $enseignants = User::where('role', 'chef_departement')->get();
         return view('rabieta.gestion.creer_departement', compact('enseignants'));
     }
 
@@ -73,30 +87,53 @@ public function listeFilieres()
 
 public function listeEtudiants()
 {
-    $chefDepartement = Departement::where('chef_id', auth()->id())->firstOrFail();
+    // 1. On récupère le pôle géré par le chef connecté
+    $chefDepartement = \App\Models\Departement::where('chef_id', auth()->id())->firstOrFail();
+    
+    // On nettoie et récupère les filières sous forme de tableau
     $filieres = array_map('trim', explode(',', $chefDepartement->filieres));
 
-    // Récupère les étudiants groupés par leur filière (champ niveau)
-    $etudiants = \App\Models\User::where('role', 'etudiant')
-        ->whereIn('niveau', $filieres)
-        ->orderBy('niveau')
-        ->orderBy('nom')
-        ->get();
+    // 2. Préparation de la requête des étudiants
+    $query = \App\Models\User::where('role', 'etudiant');
+
+    // 🚨 RECHERCHE ULTRA-SOUPLE : On cherche si une des filières du chef est contenue dans le profil de l'élève
+    $query->where(function($q) use ($filieres) {
+        foreach ($filieres as $filiere) {
+            if (!empty($filiere)) {
+                $q->orWhere('filiere', 'LIKE', "%{$filiere}%")
+                  ->orWhere('specialite', 'LIKE', "%{$filiere}%")
+                  ->orWhere('niveau', 'LIKE', "%{$filiere}%");
+            }
+        }
+    });
+
+    $etudiants = $query->orderBy('nom', 'asc')->get();
 
     return view('rabieta.chef.etudiants', compact('chefDepartement', 'etudiants'));
 }
 
+
 public function listeEnseignants()
 {
-    $chefDepartement = Departement::where('chef_id', auth()->id())->firstOrFail();
+    // 1. On récupère le département géré par le chef connecté
+    $chefDepartement = \App\Models\Departement::where('chef_id', auth()->id())->firstOrFail();
     $filieres = array_map('trim', explode(',', $chefDepartement->filieres));
 
-    // Trouve les IDs des enseignants affectés aux cours de ces filières
-    $enseignantsIds = \App\Models\Cour::whereIn('niveau', $filieres)->pluck('user_id')->unique();
-    $enseignants = \App\Models\User::whereIn('id', $enseignantsIds)->orderBy('nom')->get();
+    // 2. On récupère les identifiants uniques des enseignants qui ont un cours dans ces filières
+    $enseignantsIds = \App\Models\Cour::whereIn('filiere', $filieres)
+        ->orWhereIn('niveau', $filieres) // Double sécurité pour tes anciens cours de test
+        ->pluck('user_id')
+        ->unique();
+
+    // 3. On extrait la liste des profils Enseignants correspondants
+    $enseignants = \App\Models\User::where('role', 'enseignant')
+        ->whereIn('id', $enseignantsIds)
+        ->orderBy('nom', 'asc')
+        ->get();
 
     return view('rabieta.chef.enseignants', compact('chefDepartement', 'enseignants'));
 }
+
 public function adminInformations()
 {
     // 1. On récupère l'historique de toutes les annonces
@@ -135,5 +172,32 @@ public function storeAnnonceAdmin(Request $request)
 
     return back()->with('success', 'Information diffusée avec succès par l\'administration !');
 }
+public function edit($id)
+{
+    $departement = Departement::findOrFail($id);
+    
+    // On ne charge que les profils autorisés à diriger un pôle
+    $enseignants = User::where('role', 'chef_departement')->orderBy('nom')->get();
 
+    return view('rabieta.gestion.modifier_departement', compact('departement', 'enseignants'));
+}
+public function update(Request $request, $id)
+{
+    $departement = Departement::findOrFail($id);
+    
+    $departement->update([
+        'nom_departement' => $request->nom_departement,
+        'filieres'        => $request->filieres,
+        'chef_id'         => $request->chef_id,
+    ]);
+
+    return redirect('/departements')->with('success', 'Département mis à jour avec succès !');
+}
+public function destroy($id)
+{
+    $departement = Departement::findOrFail($id);
+    $departement->delete();
+
+    return redirect('/departements')->with('success', 'Département supprimé avec succès !');
+}
 }

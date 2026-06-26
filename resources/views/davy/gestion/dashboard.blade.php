@@ -41,6 +41,21 @@
                 </div>
             </div>
         </div>
+                <!-- À AJOUTER JUSTE AVANT LA FIN DE LA LIGNE DES CARTES (Ligne 72) -->
+        <div class="col-md">
+            <div class="card border-0 shadow-sm h-100" style="border-left:4px solid #6f42c1 !important;">
+                <div class="card-body d-flex align-items-center gap-2 p-3">
+                    <div class="rounded-circle bg-opacity-10 p-2" style="background-color: rgba(111, 66, 193, 0.1);">
+                        <i class="bi bi-shield-lock-fill" style="font-size:1.5rem; color: #6f42c1;"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small" style="font-size: 0.75rem;">Chefs Département</div>
+                        <div class="fw-bold fs-4">{{ \App\Models\User::where('role', 'chef_departement')->count() }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="col-md-3">
             <div class="card border-0 shadow-sm" style="border-left:4px solid #198754 !important;">
                 <div class="card-body d-flex align-items-center gap-3">
@@ -135,13 +150,17 @@
                                 <td>{{ $u->nom }} {{ $u->prenom }}</td>
                                 <td>{{ $u->email }}</td>
                                 <td>
-                                    @if($u->role == 'admin')
-                                        <span class="badge bg-danger">Admin</span>
-                                    @elseif($u->role == 'enseignant')
-                                        <span class="badge bg-warning text-dark">Enseignant</span>
-                                    @else
-                                        <span class="badge bg-success">Étudiant</span>
-                                    @endif
+                                    <!-- REMPLACE LES LIGNES 153 À 161 PAR CE BLOC PROPRE -->
+@if($u->role == 'admin')
+    <span class="badge bg-danger">Admin</span>
+@elseif($u->role == 'chef_departement')
+    <span class="badge bg-purple" style="background-color: #6f42c1;">Chef Dept</span>
+@elseif($u->role == 'enseignant')
+    <span class="badge bg-warning text-dark">Enseignant</span>
+@else
+    <span class="badge bg-success">Étudiant</span>
+@endif
+
                                 </td>
                                 <td>{{ $u->created_at ? $u->created_at->format('d/m/Y H:i') : 'Date inconnue' }}</td>
                             </tr>
@@ -162,6 +181,7 @@
 @endsection
 
 @push('scripts')
+
 @if(Auth::user()->isAdmin())
 <script src="https://jsdelivr.net"></script>
 <script>
@@ -188,11 +208,13 @@
     new Chart(document.getElementById('chartRoles').getContext('2d'), {
         type: 'doughnut',
         data: {
+            
             labels: [
                 'Étudiants ({{ $rolesPourcentages[0] ?? 0 }}%)',
                 'Enseignants ({{ $rolesPourcentages[1] ?? 0 }}%)',
                 'Admins ({{ $rolesPourcentages[2] ?? 0 }}%)'
             ],
+
             datasets: [{
                 data: @json($rolesData ?? []),
                 backgroundColor: ['#198754', '#ffc107', '#dc3545'],
