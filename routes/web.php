@@ -81,6 +81,8 @@ Route::middleware(['auth', 'role:chef_departement'])->group(function () {
     Route::get('/cours/creer', [CourController::class, 'create']);
     Route::post('/cours/envoyer', [CourController::class, 'store']);
     Route::get('/chef/emplois', [CourController::class, 'index']);
+    Route::post('/notes/cloturer/{filiere}', [App\Http\Controllers\NoteController::class, 'cloturerNotes']);
+
     
 });
 
@@ -98,6 +100,10 @@ Route::get('/departements/modifier/{id}', [App\Http\Controllers\DepartementContr
     Route::put('/departements/modifier/{id}', [App\Http\Controllers\DepartementController::class, 'update']);
     Route::delete('/departements/supprimer/{id}', [App\Http\Controllers\DepartementController::class, 'destroy']);
 Route::middleware(['auth', 'role:admin'])->group(function () {
+        // Routes pour la validation des comptes (Espace Admin)
+    Route::get('/admin/validation-comptes', [App\Http\Controllers\DashboardController::class, 'listeAttente']);
+    Route::post('/admin/valider-compte/{id}', [App\Http\Controllers\DashboardController::class, 'validerLeCompte']);
+
 
     // MATIERES
     Route::get('/matieres', [PageMatiereController::class, 'index']);
@@ -160,3 +166,8 @@ Route::middleware(['auth', 'role:etudiant'])->group(function () {
     Route::get('/etudiant/cours/{id}', [CourController::class, 'afficherDétails']);
     
 });
+
+Route::get('/inscription/en-attente', function () {
+    return view('en_attente'); 
+})->name('en_attente');
+

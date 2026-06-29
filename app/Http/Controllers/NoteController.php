@@ -142,4 +142,12 @@ public function sauvegarderNotes(\Illuminate\Http\Request $req, $id)
 
     return back()->with('success', 'Notes enregistrées !');
 }
+public function cloturerNotes($filiere)
+{
+    // On verrouille toutes les matières de la filière sélectionnée
+    \App\Models\Matiere::where('filiere', $filiere)->update(['est_cloture' => 1]);
+
+    return back()->with('success', 'Le semestre a été clôturé avec succès ! Les notes sont désormais verrouillées.');
+}
+
 }

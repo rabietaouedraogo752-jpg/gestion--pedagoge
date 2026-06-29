@@ -12,6 +12,9 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
+        if ($user->role !== 'admin' && $user->est_valide == 0) {
+        return redirect('/inscription/en-attente');
+    }
         $data = [];
 
         // Données communes à tous les rôles
@@ -138,4 +141,29 @@ class DashboardController extends Controller
         // Sécurité par défaut
         return redirect('/');
     }
+    // 1. AFFICHER LA LISTE DES COMPTES EN ATTENTE
+public function listeAttente()
+{
+    // On récupère uniquement les utilisateurs dont le compte est bloqué (est_valide = 0)
+    $utilisateursEnAttente = \App\Models\User::where('est_valide', 0)->orderBy('created_at', 'desc')->get();
+    
+    return view('davy.gestion.validation_comptes', compact('utilisateursEnAttente'));
+}
+
+// 2. VALIDER LE COMPTE D'UN UTILISATEUR
+public function validerLeCompte($id)
+{
+    // 1. On récupère l'utilisateur ciblé
+    $user = \App\Models\User::findOrFail($id);
+    
+    // 2. Affectation forcée de la valeur
+    $user->est_valide = 1;
+    
+    // 3. Sauvegarde immédiate en base de données
+    $user->save();
+
+    return redirect('/admin/validation-comptes')->with('success', 'Le compte de ' . $user->prenom . ' ' . $user->nom . ' a été validé avec succès !');
+}
+
+
 }

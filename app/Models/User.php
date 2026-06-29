@@ -31,6 +31,7 @@ class User extends Authenticatable
         'niveau',
         'specialite',
         'filière',
+        'est_valide',
     ];
 
     /**

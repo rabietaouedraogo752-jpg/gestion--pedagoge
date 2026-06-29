@@ -28,6 +28,13 @@
             @elseif(Auth::check() && Auth::user()->role == 'admin')
                 <!-- 2. MENU DE L'ADMINISTRATEUR -->
                 <a class="nav-link d-inline mx-2 text-white" href="/dashboard">Dashboard Admin</a>
+                <li class="nav-item">
+    <a class="nav-link {{ request()->is('admin/validation-comptes') ? 'active text-primary fw-bold' : 'text-dark' }}" href="/admin/validation-comptes"><i class="bi bi-shield-lock-fill me-2 text-danger"></i> Validation Comptes
+        <!-- Badge dynamique rouge optionnel qui indique le nombre de comptes bloqués -->
+        <span class="badge bg-danger float-end ms-2">{{ \App\Models\User::where('est_valide', 0)->count() }}</span>
+    </a>
+</li>
+
                  <a class="nav-link d-inline mx-2 text-white" href="/departements">Départements</a>
                  <a class="nav-link d-inline mx-2 text-white" href="/enseignants">Enseignants</a>
                  <a class="nav-link d-inline mx-2 text-white" href="/etudiants">Étudiants</a>

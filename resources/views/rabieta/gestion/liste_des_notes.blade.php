@@ -26,6 +26,7 @@
 
 <h2 class="text-center mb-4 border border-3 border-primary text-primary w-50 mx-auto p-2 rounded fw-bold">Bulletin Général de Notes</h2>
 
+
 <div class="d-flex justify-content-between align-items-center mb-3">
     <!-- Formulaire de recherche par nom -->
     <form action="/notes" method="GET" class="d-flex mb-0">
@@ -35,6 +36,9 @@
             <a href="/notes" class="btn btn-outline-secondary ms-2">Réinitialiser</a>
         @endif
     </form>
+    <button onclick="window.print()" class="btn btn-dark fw-bold shadow-sm">
+        <i class="bi bi-printer-fill me-1"></i> Exporter / Imprimer le Bulletin
+    </button>
 </div>        
 
 <!-- 📑 NOUVELLE NAV BARRE : FILTRAGE ACADÉMIQUE PAR FILIÈRE -->
@@ -91,6 +95,7 @@
                             <i class="bi bi-eye-fill me-1"></i> Ouvrir la saisie des notes
                         </a>
                     </div>
+                    
                 </div>
             </div>
         @empty
@@ -103,6 +108,17 @@
         @endforelse
     </div>
 @else
+@if(request('filiere'))
+<div class="mb-3 text-start d-print-none">
+    <form action="/notes/cloturer/{{ request('filiere') }}" method="POST" class="d-inline">
+        @csrf
+        <button type="submit" class="btn btn-warning fw-bold text-dark" onclick="return confirm('Attention ! Clôturer le semestre verrouillera définitivement toutes les notes de cette filière. Continuer ?')">
+            <i class="bi bi-lock-fill me-1"></i> Clôturer et Verrouiller le Semestre
+        </button>
+    </form>
+</div>
+@endif
+
     <!-- ================= VUE : FILIÈRE SPÉCIFIQUE SÉLECTIONNÉE (TON TABLEAU ACTUEL) ================= -->
     <div class="card border-0 shadow-sm bg-white">
         <div class="table-responsive">
@@ -123,20 +139,33 @@
                         <td class="fw-bold text-dark text-start">{{ $tu->nom }} {{ $tu->prenom }}</td>
                         @foreach($matieres as $ma)
                         <td>
-                            @if($existe = $tu->notes->where('matiere_id', $ma->id)->first())
-                                <span class="badge {{ $existe->valeur_note >= 10 ? 'bg-success' : 'bg-danger' }} p-2 d-block mb-1 font-monospace">
-                                    {{ $existe->valeur_note }} / 20
-                                </span>
-                                 
-                                <div class="d-flex gap-1 justify-content-center" style="font-size: 0.75rem;">
-                                    <a href="/notes/modifier/{{ $existe->id }}" class="btn btn-sm btn-info text-white px-2 py-0"><i class="bi bi-pencil">Modifier</i></a>
-                                    <form action="/notes/supprimer/{{ $existe->id }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger px-2 py-0" onclick="return confirm('Supprimer cette note ?')"><i class="bi bi-trash">Supprimer</i></button>
-                                    </form>
-                                </div>
-                            @else
+                            <!-- REMPLACE TON ANCIEN BLOC DE BOUTONS PAR CETTE VERSION SÉCURISÉE -->
+@if($existe = $tu->notes->where('matiere_id', $ma->id)->first())
+    <span class="badge {{ $existe->valeur_note >= 10 ? 'bg-success' : 'bg-danger' }} p-2 d-block mb-1">
+        {{ $existe->valeur_note }} / 20
+    </span>
+     
+    <!-- On affiche les actions UNIQUEMENT si la matière n'est pas clôturée -->
+    @if($ma->est_cloture == 0)
+        <div class="d-flex gap-1 justify-content-center d-print-none" style="font-size: 0.75rem;">
+            <a href="/notes/modifier/{{ $existe->id }}" class="btn btn-sm btn-info text-white px-2 py-0"><i class="bi bi-pencil"></i></a>
+            <form action="/notes/supprimer/{{ $existe->id }}" method="POST" class="d-inline">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-sm btn-danger px-2 py-0"><i class="bi bi-trash"></i></button>
+            </form>
+        </div>
+    @else
+        <small class="text-muted d-block text-center font-italic"><i class="bi bi-lock-fill"></i> Verrouillé</small>
+    @endif
+@else
+    @if($ma->est_cloture == 0)
+        <a href="/notes/creer/{{ $tu->id }}/{{ $ma->id }}" class="btn btn-sm btn-outline-primary w-100 py-1">Saisir</a>
+    @else
+        <span class="text-muted small font-italic">-</span>
+    @endif
+@endif
+
                                 <a href="/notes/creer/{{ $tu->id }}/{{ $ma->id }}" class="btn btn-sm btn-outline-primary w-100 py-1">
                                     <i class="bi bi-plus-lg me-1"></i> Saisir
                                 </a>
@@ -157,5 +186,32 @@
     </div>
 @endif
 </div> 
+<style>
+@media print {
+    /* Masquer les éléments inutiles sur le document officiel */
+    .d-print-none, .btn, form, .nav, .card-header, .sidebar, nav, header {
+        display: none !important;
+    }
+    /* Forcer le tableau à prendre toute la page proprement */
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    table {
+        width: 100% !important;
+        border: 1px solid #000 !important;
+    }
+    th, td {
+        border: 1px solid #ddd !important;
+        padding: 8px !important;
+        color: #000 !important;
+    }
+    .badge {
+        border: 1px solid #000 !important;
+        color: #000 !important;
+        background-color: transparent !important;
+    }
+}
+</style>
 
 @endsection
