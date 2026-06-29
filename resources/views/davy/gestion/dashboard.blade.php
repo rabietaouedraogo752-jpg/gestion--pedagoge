@@ -181,50 +181,56 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-@if(Auth::user()->isAdmin())
-<script src="https://jsdelivr.net"></script>
 <script>
-    new Chart(document.getElementById('chartInscriptions').getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: @json($moisLabels ?? []),
-            datasets: [{
-                label: 'Inscriptions',
-                data: @json($moisData ?? []),
-                backgroundColor: 'rgba(13,110,253,0.7)',
-                borderColor: 'rgba(13,110,253,1)',
-                borderWidth: 2,
-                borderRadius: 6,
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-        }
-    });
+document.addEventListener('DOMContentLoaded', function () {
+    // 1. Graphique des Inscriptions par mois
+    const ctxInscriptions = document.getElementById('chartInscriptions');
+    if (ctxInscriptions) {
+        new Chart(ctxInscriptions.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: @json($moisLabels ?? []),
+                datasets: [{
+                    label: 'Inscriptions',
+                    data: @json($moisData ?? []),
+                    backgroundColor: 'rgba(13, 110, 253, 0.7)',
+                    borderColor: 'rgba(13, 110, 253, 1)',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            }
+        });
+    }
 
-    new Chart(document.getElementById('chartRoles').getContext('2d'), {
-        type: 'doughnut',
-        data: {
-            
-            labels: [
-                'Étudiants ({{ $rolesPourcentages[0] ?? 0 }}%)',
-                'Enseignants ({{ $rolesPourcentages[1] ?? 0 }}%)',
-                'Admins ({{ $rolesPourcentages[2] ?? 0 }}%)'
-            ],
-
-            datasets: [{
-                data: @json($rolesData ?? []),
-                backgroundColor: ['#198754', '#ffc107', '#dc3545'],
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { position: 'bottom' } }
-        }
-    });
+    // 2. Graphique de Répartition par rôle
+    const ctxRoles = document.getElementById('chartRoles');
+    if (ctxRoles) {
+        new Chart(ctxRoles.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: [
+                    'Étudiants ({{ $rolesPourcentages[0] ?? 0 }}%)',
+                    'Enseignants ({{ $rolesPourcentages[1] ?? 0 }}%)',
+                    'Admins ({{ $rolesPourcentages[2] ?? 0 }}%)'
+                ],
+                datasets: [{
+                    data: @json($rolesData ?? []),
+                    backgroundColor: ['#198754', '#ffc107', '#dc3545'],
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+});
 </script>
-@endif
 @endpush
