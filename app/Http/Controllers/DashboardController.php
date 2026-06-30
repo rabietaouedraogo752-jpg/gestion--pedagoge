@@ -79,6 +79,7 @@ class DashboardController extends Controller
         // -------------------------------------------------------------
 
         // 1. SI C'EST UN ÉTUDIANT
+        // 1. SI C'EST UN ÉTUDIANT
         if ($user->role == 'etudiant') {
             $mesNotes = \App\Models\Note::where('user_id', $user->id)->with('matiere')->get();
             $mesCours = \App\Models\Cour::where(function($q) use ($user) {
@@ -91,7 +92,10 @@ class DashboardController extends Controller
                         ->get();
                         
             $toutesMatieres = \App\Models\Matiere::all();
+            
+            // ✅ CORRECTION ICI : On prend le niveau de l'étudiant, le vide ET le mot clé "Global"
             $annonces = \App\Models\Annonce::where('cible_niveau', $user->niveau)
+                ->orWhere('cible_niveau', 'Global')
                 ->orWhereNull('cible_niveau')
                 ->orderBy('created_at', 'desc')
                 ->get();
