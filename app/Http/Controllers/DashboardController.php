@@ -119,10 +119,12 @@ class DashboardController extends Controller
                   ->orWhereIn('specialite', $filieres); // Sécurité pour chercher dans 'specialite' (ex: Informatique)
             })
             ->count();
+            // Avant : $coursIds = \App\Models\Cour::whereIn('niveau', $filieres)->pluck('user_id')->unique();
+// Après (Correction) : 
 
-            $coursIds = \App\Models\Cour::whereIn('niveau', $filieres)->pluck('user_id')->unique();
-            $totalEnseignantsDept = \App\Models\User::whereIn('id', $coursIds)->count();
-            $totalCoursDept = \App\Models\Cour::whereIn('niveau', $filieres)->count();
+$coursIds = \App\Models\Cour::whereIn('filiere', $filieres)->pluck('user_id')->unique();
+$totalEnseignantsDept = \App\Models\User::whereIn('id', $coursIds)->where('role', 'enseignant')->count();
+ $totalCoursDept = \App\Models\Cour::whereIn('niveau', $filieres)->count();
 
             $annonces = \App\Models\Annonce::orderBy('created_at', 'desc')->get();
 
